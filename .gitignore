@@ -1,0 +1,54 @@
+## Haskell build
+dist
+*.hi
+*.o
+.stack-work/
+
+## Editor ignores
+TAGS
+*~
+*.swp
+
+## databases
+test.db3
+*.sqlite3
+
+# ?
+tarballs/
+
+# install script error messages
+# maybe should use shellyNoDir ?
+.shelly/
+
+## Cabal sandboxing tools
+.virthualenv
+cabal-dev/
+cabal.sandbox.config
+.cabal-sandbox/
+dist-newstyle/
+.ghc.environment.*
+
+## Docker image ignores
+/.cabal/
+/.stackage/
+/.ghc/
+/.bash_history
+/.bashrc
+.mongorc.js
+.dbshell
+crane.yml
+# can use this for Docker databases
+persistent-test/db/
+
+# docker image with a mounted file system
+/x86_64-linux-ghc-7.8.3-packages.conf.d/
+/packages/
+
+# macOS
+.DS_Store
+
+# hspec nonsense
+.hspec-failures
+
+stack.yaml.lock
+*.yaml.lock
