@@ -39,16 +39,7 @@ module RequireCallStack
     ) where
 
 import GHC.Stack
-import Unsafe.Coerce
-import GHC.TypeLits
-import Control.Exception (throw)
-
 import RequireCallStack.Internal
-
--- | An alias to make referring to this easier.
---
--- @since 0.1.0.0
-type RequireCallStackImpl = Add_RequireCallStack_ToFunctionContext_OrUse_provideCallStack
 
 -- | This constraint is similar to 'HasCallStack' in that it's presence
 -- will capture a stack frame for the call site of the function. This helps

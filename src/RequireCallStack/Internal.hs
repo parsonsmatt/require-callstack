@@ -5,6 +5,9 @@
 -- own risk.
 module RequireCallStack.Internal where
 
+import Unsafe.Coerce
+import GHC.Stack
+
 -- | If you're running into this class, then you need to add
 -- 'RequireCallStack' to your function's signature, or discharge the
 -- constraint using 'provideCallStack'.
@@ -20,6 +23,17 @@ module RequireCallStack.Internal where
 --
 -- @since 0.1.0.0
 class Add_RequireCallStack_ToFunctionContext_OrUse_provideCallStack
+
+-- | An alias to make referring to
+-- 'Add_RequireCallStack_ToFunctionContext_OrUse_provideCallStack' easier,
+-- since it is a bit of a mouthful.
+--
+-- If you see this, you probably need to either add 'RequireCallStack' to
+-- the function constraints, or you need to call 'provideCallStack' to
+-- discharge it.
+--
+-- @since 0.1.0.0
+type RequireCallStackImpl = Add_RequireCallStack_ToFunctionContext_OrUse_provideCallStack
 
 -- | An internal detail. This is a specialization of the trick used in the
 -- @reflection@ library to reify constraints. It's based on some GHC

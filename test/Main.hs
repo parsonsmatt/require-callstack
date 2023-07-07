@@ -25,8 +25,8 @@ main = do
             -- panic "one level of provide callstack"
             pure ()
 
-    baz 3
+    _ <- baz 3
 
-    bar 3
+    -- bar 3
 
     pure ()
