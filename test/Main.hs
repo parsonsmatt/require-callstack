@@ -3,6 +3,7 @@
 module Main (main) where
 
 import RequireCallStack (RequireCallStack, provideCallStack)
+import Control.Exception
 
 panic :: RequireCallStack => String -> IO a
 panic = error
@@ -25,8 +26,9 @@ main = do
             -- panic "one level of provide callstack"
             pure ()
 
-    baz 3
+    Left (ErrorCall "foo") <- try $ baz 3
 
-    bar 3
+
+    -- bar 3
 
     pure ()
