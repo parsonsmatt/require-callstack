@@ -31,25 +31,12 @@
 -- bar i = `provideCallStack` `$` foo i
 -- @
 --
--- … or if you have the @ImplicitParams@ language extension you can also define
--- the @?provideCallStack@ implicit parameter instead of using
--- `provideCallStack`:
---
--- @
--- foo :: `RequireCallStack` => `Int` -> `String`
--- foo = `error` "oh no"
---
--- bar :: `Int` -> `String`
--- bar i = foo i
---   where
---     ?provideCallStack = ()
--- @
---
 -- Couple this with @annotated-exception@ library for excellent provenance
 -- information on all thrown exceptions.
 module RequireCallStack
     ( RequireCallStack
     , RequireCallStackImpl
+    , CallStack
     , provideCallStack
     , errorRequireCallStack
     ) where
@@ -70,7 +57,10 @@ type RequireCallStack = (HasCallStack, RequireCallStackImpl)
 -- constraint using 'provideCallStack'.
 --
 -- @since 0.1.0.0
-type RequireCallStackImpl = ?provideCallStack :: ()
+type RequireCallStackImpl = ?provideCallStack :: CallStack
+
+-- | The constructor for this type is intentionally not exported
+data CallStack = CallStack
 
 -- | Raise an 'Control.Exception.ErrorCall' and incur a 'RequireCallStack'
 -- constraint while you do so. This
@@ -79,7 +69,7 @@ type RequireCallStackImpl = ?provideCallStack :: ()
 errorRequireCallStack :: RequireCallStack => String -> x
 errorRequireCallStack = error
 
-instance TypeError ('Text "Add RequireCallStack to your function context or use provideCallStack") => IP "provideCallStack" ()
+instance TypeError ('Text "Add RequireCallStack to your function context or use provideCallStack") => IP "provideCallStack" CallStack
 
 -- | Satisfy a 'RequireCallStack' constraint for the given block. Can be
 -- used instead of propagating a 'RequireCallStack' up the call graph.
@@ -93,16 +83,6 @@ instance TypeError ('Text "Add RequireCallStack to your function context or use 
 --       `errorRequireCallStack` "hello"
 -- @
 --
--- If you have the @ImplicitParams@ language extension you can also define the
--- @?provideCallStack@ implicit parameter instead of using `provideCallStack`:
---
--- @
--- main :: `IO` ()
--- main = do
---   let ?provideCallStack = ()
---   `errorRequireCallStack` "hello"
--- @
---
 -- Note how @main@ does not have a 'HasCallStack' or 'RequireCallStack'
 -- constraint. This function eliminates them, so that
 -- 'errorRequireCallStack' can be called without compilation error.
@@ -111,4 +91,4 @@ instance TypeError ('Text "Add RequireCallStack to your function context or use 
 provideCallStack :: (RequireCallStackImpl => r) -> r
 provideCallStack r = r
   where
-    ?provideCallStack = ()
+    ?provideCallStack = CallStack
