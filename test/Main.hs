@@ -20,7 +20,7 @@ baz = provideCallStack bar
 main :: IO ()
 main = do
     -- won't work, no callstack
-   -- panic "asdf"
+    -- panic "asdf"
 
     provideCallStack $ do
             -- panic "one level of provide callstack"
