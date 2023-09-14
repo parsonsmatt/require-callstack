@@ -1,4 +1,6 @@
-{-# language RankNTypes, FlexibleContexts, FlexibleInstances, ImpredicativeTypes, MultiParamTypeClasses, DataKinds, ConstraintKinds #-}
+{-# language RankNTypes, MultiParamTypeClasses, DataKinds, ConstraintKinds, ImplicitParams, UndecidableInstances #-}
+
+{-# OPTIONS_GHC -Wno-orphans -Wno-missing-methods #-}
 
 -- | This module provides utilities to ensure that you propagate
 -- 'HasCallStack' constraints by introducing a class 'RequireCallStack'
@@ -22,11 +24,11 @@
 -- easier, you can use 'provideCallStack' to dismiss the constraint.
 --
 -- @
--- foo :: RequireCallStack => Int -> String
--- foo = error "oh no"
+-- foo :: `RequireCallStack` => `Int` -> `String`
+-- foo = `error` "oh no"
 --
--- bar :: Int -> String
--- bar i = provideCallStack $ foo i
+-- bar :: `Int` -> `String`
+-- bar i = `provideCallStack` `$` foo i
 -- @
 --
 -- Couple this with @annotated-exception@ library for excellent provenance
@@ -34,12 +36,14 @@
 module RequireCallStack
     ( RequireCallStack
     , RequireCallStackImpl
+    , ProvideCallStack
     , provideCallStack
     , errorRequireCallStack
     ) where
 
-import GHC.Stack
-import RequireCallStack.Internal
+import GHC.Stack (HasCallStack)
+import GHC.Classes (IP(..))
+import GHC.TypeLits (TypeError, ErrorMessage(..))
 
 -- | This constraint is similar to 'HasCallStack' in that it's presence
 -- will capture a stack frame for the call site of the function. This helps
@@ -48,9 +52,43 @@ import RequireCallStack.Internal
 -- @since 0.1.0.0
 type RequireCallStack = (HasCallStack, RequireCallStackImpl)
 
--- | Raise an 'ErrorCall' and incur a 'RequireCallStack' constraint while
--- you do so. This
+-- | If you're running into this class, then you need to add
+-- 'RequireCallStack' to your function's signature, or discharge the
+-- constraint using 'provideCallStack'.
+--
+-- @since 0.1.0.0
+type RequireCallStackImpl = ?provideCallStack :: ProvideCallStack
+
+-- | The constructor for this type is intentionally not exported
+data ProvideCallStack = ProvideCallStack
+
+-- | Raise an 'Control.Exception.ErrorCall' and incur a 'RequireCallStack'
+-- constraint while you do so. This
 --
 -- @since 0.1.0.0
 errorRequireCallStack :: RequireCallStack => String -> x
 errorRequireCallStack = error
+
+instance TypeError ('Text "Add RequireCallStack to your function context or use provideCallStack") => IP "provideCallStack" ProvideCallStack
+
+-- | Satisfy a 'RequireCallStack' constraint for the given block. Can be
+-- used instead of propagating a 'RequireCallStack' up the call graph.
+--
+-- Usage:
+--
+-- @
+-- main :: `IO` ()
+-- main = do
+--   `provideCallStack` `$` do
+--       `errorRequireCallStack` "hello"
+-- @
+--
+-- Note how @main@ does not have a 'HasCallStack' or 'RequireCallStack'
+-- constraint. This function eliminates them, so that
+-- 'errorRequireCallStack' can be called without compilation error.
+--
+-- @since 0.1.0.0
+provideCallStack :: (RequireCallStackImpl => r) -> r
+provideCallStack r = r
+  where
+    ?provideCallStack = ProvideCallStack
