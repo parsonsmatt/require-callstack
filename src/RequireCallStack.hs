@@ -36,7 +36,7 @@
 module RequireCallStack
     ( RequireCallStack
     , RequireCallStackImpl
-    , CallStack
+    , ProvideCallStack
     , provideCallStack
     , errorRequireCallStack
     ) where
@@ -57,10 +57,10 @@ type RequireCallStack = (HasCallStack, RequireCallStackImpl)
 -- constraint using 'provideCallStack'.
 --
 -- @since 0.1.0.0
-type RequireCallStackImpl = ?provideCallStack :: CallStack
+type RequireCallStackImpl = ?provideCallStack :: ProvideCallStack
 
 -- | The constructor for this type is intentionally not exported
-data CallStack = CallStack
+data ProvideCallStack = ProvideCallStack
 
 -- | Raise an 'Control.Exception.ErrorCall' and incur a 'RequireCallStack'
 -- constraint while you do so. This
@@ -69,7 +69,7 @@ data CallStack = CallStack
 errorRequireCallStack :: RequireCallStack => String -> x
 errorRequireCallStack = error
 
-instance TypeError ('Text "Add RequireCallStack to your function context or use provideCallStack") => IP "provideCallStack" CallStack
+instance TypeError ('Text "Add RequireCallStack to your function context or use provideCallStack") => IP "provideCallStack" ProvideCallStack
 
 -- | Satisfy a 'RequireCallStack' constraint for the given block. Can be
 -- used instead of propagating a 'RequireCallStack' up the call graph.
@@ -91,4 +91,4 @@ instance TypeError ('Text "Add RequireCallStack to your function context or use 
 provideCallStack :: (RequireCallStackImpl => r) -> r
 provideCallStack r = r
   where
-    ?provideCallStack = CallStack
+    ?provideCallStack = ProvideCallStack
