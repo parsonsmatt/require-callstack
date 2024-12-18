@@ -2,7 +2,7 @@
 
 ## 0.2.0.1
 
-* []()
+* [#3](https://github.com/parsonsmatt/require-callstack/pull/3)
     * Finish the docs
 
 ## 0.2.0.0
