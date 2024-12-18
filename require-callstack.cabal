@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               require-callstack
-version:            0.2.0.0
+version:            0.2.0.1
 synopsis:           Propagate HasCallStack with constraints
 description:        See the README for more information about this package.
 license:            MIT

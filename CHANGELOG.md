@@ -1,5 +1,10 @@
 # Revision history for require-callstack
 
+## 0.2.0.1
+
+* []()
+    * Finish the docs
+
 ## 0.2.0.0
 
 * [#2](https://github.com/parsonsmatt/require-callstack/pull/2) 
