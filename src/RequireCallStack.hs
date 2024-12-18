@@ -46,8 +46,40 @@ import GHC.Classes (IP(..))
 import GHC.TypeLits (TypeError, ErrorMessage(..))
 
 -- | This constraint is similar to 'HasCallStack' in that it's presence
--- will capture a stack frame for the call site of the function. This helps
--- to preserve callstack provenance, which
+-- will capture a stack frame for the call site of the function. Unlike
+-- 'HasCallStack', this is not a "magic" constraint that is automagically
+-- solved by GHC, which means that calling a function with this constraint
+-- will cause GHC to ask you to add this constraint to your own function.
+--
+-- For example, let's say you have a function @unsafeHead :: 'RequireCallStack' =>
+-- [a] -> a@. Then you go to call that function:
+--
+-- @
+-- myCoolFunction :: [Int] -> Int
+-- myCoolFunction = unsafeHead
+-- @
+--
+-- GHC will complain about the lack of the 'RequireCallStack' constraint.
+-- You will have two options:
+--
+-- 1. Add the constraint to your functions. This is a good option because
+--    it means the callstack from @unsafeHead@ will include the
+--    @myCoolFunction@ callsite as well.
+--
+--    @
+--    myCoolFunction :: RequireCallStack => [Int] -> Int
+--    myCoolFunction = unsafeHead
+--    @
+--
+-- 2. Use 'provideCallStack' to silence the error. This will truncate the
+--    callstack unless you use 'HasCallStack' above. You should only do
+--    this if you're confident that you don't need any debugging
+--    information from a more complete callstack.
+--
+--    @
+--    myCoolFunction :: [Int] -> Int
+--    myCoolFunction = 'provideCallStack' unsafeHead
+--    @
 --
 -- @since 0.1.0.0
 type RequireCallStack = (HasCallStack, RequireCallStackImpl)
@@ -56,6 +88,8 @@ type RequireCallStack = (HasCallStack, RequireCallStackImpl)
 -- 'RequireCallStack' to your function's signature, or discharge the
 -- constraint using 'provideCallStack'.
 --
+-- See 'RequireCallStack' for more information.
+--
 -- @since 0.1.0.0
 type RequireCallStackImpl = ?provideCallStack :: ProvideCallStack
 
@@ -63,7 +97,9 @@ type RequireCallStackImpl = ?provideCallStack :: ProvideCallStack
 data ProvideCallStack = ProvideCallStack
 
 -- | Raise an 'Control.Exception.ErrorCall' and incur a 'RequireCallStack'
--- constraint while you do so. This
+-- constraint while you do so. This variant will ensure that callers of
+-- unsafe functions are required to provide a callstack until explicitly
+-- cut off with 'provideCallStack'.
 --
 -- @since 0.1.0.0
 errorRequireCallStack :: RequireCallStack => String -> x
